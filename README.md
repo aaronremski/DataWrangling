@@ -1,4 +1,7 @@
-# DataWrangling
-## My Udacity DataWrangling course work
+# Data Wrangling Techniques
 
-I'd also like to incorporate Jupyter versioning in this repo. 
+## Gather
+
+## Assess
+
+## Clean
