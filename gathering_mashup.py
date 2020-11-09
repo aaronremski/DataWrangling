@@ -2,10 +2,11 @@
 # ---
 # jupyter:
 #   jupytext:
+#     formats: ipynb,py:percent
 #     text_representation:
 #       extension: .py
-#       format_name: light
-#       format_version: '1.5'
+#       format_name: percent
+#       format_version: '1.3'
 #       jupytext_version: 1.6.0
 #   kernelspec:
 #     display_name: Python 3
@@ -13,8 +14,10 @@
 #     name: python3
 # ---
 
+# %% [markdown]
 # ## Quiz
 
+# %%
 import pandas as pd
 import wptools
 import os
@@ -22,6 +25,7 @@ import requests
 from PIL import Image
 from io import BytesIO
 
+# %%
 title_list_test = [
  'The_Wizard_of_Oz_(1939_film)',
  'Citizen_Kane',
@@ -31,6 +35,7 @@ title_list_test = [
  'The_Cabinet_of_Dr._Caligari']
 
 
+# %%
 title_list = [
  'The_Wizard_of_Oz_(1939_film)',
  'Citizen_Kane',
@@ -134,15 +139,33 @@ title_list = [
  'Battleship_Potemkin'
 ]
 
+# %%
 
-
+# %%
 folder_name = 'bestofrt_posters'
 # Make directory if it doesn't already exist
 if not os.path.exists(folder_name):
     os.makedirs(folder_name)
 
+# %% [markdown]
 # #### Note: the cell below, if correctly implemented, will likely take ~5 minutes to run.
 
+# %%
+for title in title_list_test:
+    ranking = title_list_test.index(title) + 1
+    print(ranking)
+
+# %%
+page = wptools.page('The_Grapes_of_Wrath_(film)').get()
+page
+
+# %%
+
+# %%
+
+# %%
+
+# %%
 # List of dictionaries to build and convert to a DataFrame later
 df_list = []
 image_errors = {}
@@ -152,11 +175,14 @@ for title in title_list_test:
         ranking = title_list.index(title) + 1
         print(ranking)
         page = wptools.page(title, silent=True)
+        
         # Your code here (three lines)
         images =
+        
         # First image is usually the poster
         first_image_url =
-        r =
+        r = requests.get(first_image_url)
+        
         # Download movie poster image
         i = Image.open(BytesIO(r.content))
         image_file_format = first_image_url.split('.')[-1]
@@ -171,11 +197,14 @@ for title in title_list_test:
         print(str(ranking) + "_" + title + ": " + str(e))
         image_errors[str(ranking) + "_" + title] = images
 
+# %% [markdown]
 # One you have completed the above code requirements, read and run the three cells below and interpret their output.
 
+# %%
 for key in image_errors.keys():
     print(key)
 
+# %%
 # Inspect unidentifiable images and download them individually
 for rank_title, images in image_errors.items():
     if rank_title == '22_A_Hard_Day%27s_Night_(film)':
@@ -196,6 +225,7 @@ for rank_title, images in image_errors.items():
     image_file_format = url.split('.')[-1]
     i.save(folder_name + "/" + rank_title + '.' + image_file_format)
 
+# %%
 # Create DataFrame from list of dictionaries
 df = pd.DataFrame(df_list, columns = ['ranking', 'title', 'poster_url'])
 df = df.sort_values('ranking').reset_index(drop=True)
