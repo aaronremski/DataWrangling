@@ -20,9 +20,9 @@
 import pandas as pd
 
 # %%
-patients = pd.read_csv('patients.csv')
-treatments = pd.read_csv('treatments.csv')
-adverse_reactions = pd.read_csv('adverse_reactions.csv')
+patients = pd.read_csv('data/patients.csv')
+treatments = pd.read_csv('data/treatments.csv')
+adverse_reactions = pd.read_csv('data/adverse_reactions.csv')
 
 # %% [markdown]
 # ## Assess
@@ -134,7 +134,7 @@ treatments_clean = treatments.copy()
 adverse_reactions_clean = adverse_reactions.copy()
 
 # %%
-treatments_cut = pd.read_csv("treatments_cut.csv")
+treatments_cut = pd.read_csv("data/treatments_cut.csv")
 treatments_cut.info()
 
 # %% [markdown]
@@ -201,13 +201,25 @@ sum(treatments_clean.hba1c_change.isnull())
 
 # %% [markdown]
 # ##### Define
-# *Your definition here. Hint 1: use regular expressions with pandas' [`str.extract` method](https://pandas.pydata.org/pandas-docs/stable/generated/pandas.Series.str.extract.html). Here is an amazing [regex tutorial](https://regexone.com/). Hint 2: [various phone number regex patterns](https://stackoverflow.com/questions/16699007/regular-expression-to-match-standard-10-digit-phone-number). Hint 3: [email address regex pattern](http://emailregex.com/), which you might need to modify to distinguish the email from the phone number.*
+# Separate contact data into appropriate columns, email & phone. 
+#
+# Hint 1: use regular expressions with pandas' [`str.extract` method](https://pandas.pydata.org/pandas-docs/stable/generated/pandas.Series.str.extract.html). Here is an amazing [regex tutorial](https://regexone.com/). Hint 2: [various phone number regex patterns](https://stackoverflow.com/questions/16699007/regular-expression-to-match-standard-10-digit-phone-number). Hint 3: [email address regex pattern](http://emailregex.com/), which you might need to modify to distinguish the email from the phone number.*
 
 # %% [markdown]
 # ##### Code
 
 # %%
-# Your cleaning code here
+patients_clean.head(2)
+
+# %%
+
+# %%
+
+# %%
+
+# %%
+
+# %%
 
 # %% [markdown]
 # ##### Test
