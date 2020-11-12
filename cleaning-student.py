@@ -18,6 +18,8 @@
 
 # %%
 import pandas as pd
+import numpy as np
+import re
 
 # %%
 patients = pd.read_csv('data/patients.csv')
@@ -190,6 +192,9 @@ treatments_clean.sample(10)
 # %%
 sum(treatments_clean.hba1c_change.isnull())
 
+# %%
+treatments_clean.info()
+
 # %% [markdown]
 # ### Tidiness
 
@@ -212,52 +217,165 @@ sum(treatments_clean.hba1c_change.isnull())
 patients_clean.head(2)
 
 # %%
+patients_clean['email'] = patients_clean['contact'].str.extract(r'([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z]{2,4})')
+patients_clean
 
 # %%
+pd.isna(patients_clean.contact).value_counts()
 
 # %%
+patients_clean.dropna(inplace=True)
+
 
 # %%
+pd.isna(patients_clean.contact).value_counts()
+
 
 # %%
+def extract_phone(row):
+    ph_re = re.compile(r'1?\W*([2-9][0-8][0-9])\W*([2-9][0-9]{2})\W*([0-9]{4})(\se?x?t?(\d*))?')
+    found = ph_re.search(row)
+    if found:
+        return found.group()
+    else:
+        return ''
+
+
+# %%
+extract_phone(patients_clean.contact[1])
+
+# %%
+patients_clean['phone'] = patients_clean.apply(lambda row: extract_phone(row['contact']), axis=1)
+patients_clean
+
+
+# %% [markdown]
+# ### Fix email column where contacts contained phone numbers BEFORE the email address. Since email can start with numbers, it is theoritcally possible to have a phone number in front of letters in an email address.
+
+# %%
+def remove_phone_from_email(email,phone):
+    if phone in email:
+        return re.sub(phone, '', email)
+    else:
+        return email
+
+
+# %%
+patients_clean2 = patients_clean.iloc[0:5,:].copy()
+patients_clean2
+
+# %%
+patients_clean2['email']
+
+# %%
+patients_clean2['email'] = patients_clean2.apply(lambda row: remove_phone_from_email(row['email'],row['phone']),axis=1)
+patients_clean2
+
+# %%
+patients_clean['email'] = patients_clean.apply(lambda row: remove_phone_from_email(row['email'],row['phone']),axis=1)
+
+# %%
+patients_clean.drop(columns='contact',inplace=True)
 
 # %% [markdown]
 # ##### Test
 
 # %%
-# Your testing code here
+patients_clean.sample(20)
 
 # %% [markdown]
 # #### Three variables in two columns in `treatments` table (treatment, start dose and end dose)
 
+# %%
+treatments_clean.head(5)
+
+# %%
+treat = treatments_clean.copy()
+
 # %% [markdown]
 # ##### Define
-# *Your definition here. Hint: use pandas' [melt function](https://pandas.pydata.org/pandas-docs/stable/generated/pandas.melt.html) and [`str.split()` method](https://pandas.pydata.org/pandas-docs/stable/generated/pandas.Series.str.split.html). Here is an excellent [`melt` tutorial](https://deparkes.co.uk/2016/10/28/reshape-pandas-data-with-melt/).*
+# Separate auralin & novodra columns into 3. Treatment, start dose, & end dose.
 
 # %% [markdown]
 # ##### Code
 
 # %%
-# Your cleaning code here
+val = treat.iloc[0,2]
+val2 = val.split()
+val2
+
+
+# %%
+def split_dose(aur_dose,nov_dose):
+    if aur_dose != '-':
+        val = aur_dose.split()
+        start_dose = val[0]
+        start_dose = re.sub('u','',start_dose)
+        end_dose = val[2]
+        end_dose = re.sub('u','',end_dose)
+        treatment = 'auralin'
+    elif nov_dose != '-':
+        val = nov_dose.split()
+        start_dose = val[0]
+        start_dose = re.sub('u','',start_dose)
+        end_dose = val[2]
+        end_dose = re.sub('u','',end_dose)
+        treatment = 'novodra'
+    
+    return pd.Series([treatment,int(start_dose),int(end_dose)])
+
+
+# %%
+treat[['treatment','start_dose','end_dose']] = treat.apply(lambda row: split_dose(row.auralin,row.novodra), axis=1)
+treat.sample(5)
+
+# %%
 
 # %% [markdown]
 # ##### Test
 
 # %%
-# Your testing code here
+treat.sample(20)
 
 # %% [markdown]
 # #### Adverse reaction should be part of the `treatments` table
 
 # %% [markdown]
 # ##### Define
-# *Your definition here. Hint: [tutorial](https://chrisalbon.com/python/pandas_join_merge_dataframe.html) for the function used in the solution.*
+# Consolidate files/dataframes table, adverse_reactions. Add data to treatments dataframe. 
 
 # %% [markdown]
 # ##### Code
 
 # %%
-# Your cleaning code here
+adverse_reactions.sample(5)
+
+# %%
+adverse_reactions.info()
+
+# %%
+treat.info()
+
+# %%
+treat_adver = pd.concat([treat,adverse_reactions], join='outer')
+treat_adver
+
+# %%
+treatment_adverse = pd.merge(adverse_reactions,treat, on='surname', how='outer')
+treatment_adverse
+
+# %%
+treatment_adverse.query("surname == 'day'")
+
+# %%
+dups = treatment_adverse[treatment_adverse['surname'].duplicated()]
+
+# %%
+dups
+
+# %%
+
+# %%
 
 # %% [markdown]
 # ##### Test
