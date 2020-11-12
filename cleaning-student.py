@@ -368,7 +368,7 @@ treatment_adverse
 treatment_adverse.query("surname == 'day'")
 
 # %%
-dups = treatment_adverse[treatment_adverse['surname'].duplicated()]
+dups = treatment_adverse[treatment_adverse['surname'].duplicated(keep=False)]
 
 # %%
 dups
