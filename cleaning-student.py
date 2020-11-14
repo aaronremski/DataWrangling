@@ -33,6 +33,9 @@ adverse_reactions = pd.read_csv('data/adverse_reactions.csv')
 patients.head(2)
 
 # %%
+patients.tail(5)
+
+# %%
 treatments.head(2)
 
 # %%
@@ -208,7 +211,6 @@ treatments_clean.info()
 # ##### Define
 # Separate contact data into appropriate columns, email & phone. 
 #
-# Hint 1: use regular expressions with pandas' [`str.extract` method](https://pandas.pydata.org/pandas-docs/stable/generated/pandas.Series.str.extract.html). Here is an amazing [regex tutorial](https://regexone.com/). Hint 2: [various phone number regex patterns](https://stackoverflow.com/questions/16699007/regular-expression-to-match-standard-10-digit-phone-number). Hint 3: [email address regex pattern](http://emailregex.com/), which you might need to modify to distinguish the email from the phone number.*
 
 # %% [markdown]
 # ##### Code
@@ -247,6 +249,9 @@ extract_phone(patients_clean.contact[1])
 # %%
 patients_clean['phone'] = patients_clean.apply(lambda row: extract_phone(row['contact']), axis=1)
 patients_clean
+
+# %%
+patients_clean.tail(5)
 
 
 # %% [markdown]
@@ -329,8 +334,6 @@ def split_dose(aur_dose,nov_dose):
 treat[['treatment','start_dose','end_dose']] = treat.apply(lambda row: split_dose(row.auralin,row.novodra), axis=1)
 treat.sample(5)
 
-# %%
-
 # %% [markdown]
 # ##### Test
 
@@ -365,42 +368,85 @@ treatment_adverse = pd.merge(adverse_reactions,treat, on='surname', how='outer')
 treatment_adverse
 
 # %%
-treatment_adverse.query("surname == 'day'")
+treat2 = treat.copy()
 
 # %%
-dups = treatment_adverse[treatment_adverse['surname'].duplicated(keep=False)]
+treat2['fullname'] = treat2['given_name'] + " " + treat2['surname']
 
 # %%
-dups
+treat2.head(5)
 
 # %%
+adverse_reactions['fullname'] = adverse_reactions['given_name'] + " " + adverse_reactions['surname']
+adverse_reactions.head(5)
 
 # %%
+treat2_advers = pd.merge(treat2,adverse_reactions, on="fullname", how='left')
+treat2_advers
+
+# %%
+treat2_advers.info()
+
+# %%
+treat2_advers = treat2_advers.rename(columns={'given_name_x':'given_name',
+                                              'surname_x':'surname'})
+treat2_advers.head(2)
+
+# %%
+treatment = treat2_advers.copy()
 
 # %% [markdown]
 # ##### Test
 
 # %%
-# Your testing code here
+treatment.sample(20)
+
+# %%
+type(treatment.loc[0,'adverse_reaction'])
+
+# %%
+treatment.head(5)
 
 # %% [markdown]
 # #### Given name and surname columns in `patients` table duplicated in `treatments` and `adverse_reactions` tables  and Lowercase given names and surnames
 
+# %%
+patients_clean.head(5)
+
+# %%
+patients_clean.info()
+
+# %%
+treatment.surname.duplicated().sum()
+
+# %%
+treatment.info()
+
 # %% [markdown]
 # ##### Define
-# *Your definition here. Hint: [tutorial](https://chrisalbon.com/python/pandas_join_merge_dataframe.html) for one function used in the solution and [tutorial](http://erikrood.com/Python_References/dropping_rows_cols_pandas.html) for another function used in the solution.*
+# Remove duplicate columns from treatments & adverse_reactions tables. Additionally, capitilize 1st letter for treatment's surname & given_name. 
 
 # %% [markdown]
 # ##### Code
 
 # %%
-# Your cleaning code here
+treat2_advers.drop(columns=['given_name_y','surname_y','auralin','novodra'],inplace=True)
+treat2_advers
+
+# %%
+treat2_advers.drop(columns='fullname',inplace=True)
+treat2_advers.head(2)
+
+# %%
+treatment.given_name = treatment.given_name.str.capitalize()
+treatment.surname = treatment.surname.str.capitalize()
+treatment.head(4)
 
 # %% [markdown]
 # ##### Test
 
 # %%
-# Your testing code here
+treatment.sample(10)
 
 # %% [markdown]
 # ### Quality
@@ -413,111 +459,199 @@ dups
 
 # %% [markdown]
 # ##### Define
-# *Your definition here. Hint: see the "Data Cleaning Process" page.*
+# Patients dataset contains column for zip code. The zip code column data type is float. It should be "object", text. Some zips are only 4 numbers as well. Change datatype and pad four digit zip codes with a leading 0.
 
 # %% [markdown]
 # ##### Code
 
 # %%
-# Your cleaning code here
+patients_clean.head(2)
+
+# %%
+patients_clean.zip_code = patients_clean.zip_code.astype(str).str[:-2].str.pad(5,fillchar='0')
+
+# %%
+patients_clean.info()
+
+# %%
+patients_clean.tail(10)
+
+# %%
+patients_clean.loc[502,'zip_code'] = '68324'
 
 # %% [markdown]
 # ##### Test
 
 # %%
-# Your testing code here
+patients_clean.zip_code.sample(10)
 
 # %% [markdown]
 # #### Tim Neudorf height is 27 in instead of 72 in
 
 # %% [markdown]
 # ##### Define
-# *Your definition here.*
+# Patients height is not likely. Invert height.
 
 # %% [markdown]
 # ##### Code
 
 # %%
-# Your cleaning code here
+patients_clean[patients_clean.surname == 'Neudorf']
+
+# %%
+patients_clean.loc[4,'height'] = 72
 
 # %% [markdown]
 # ##### Test
 
 # %%
-# Your testing code here
+patients_clean[patients_clean.surname == 'Neudorf']
 
 # %% [markdown]
 # #### Full state names sometimes, abbreviations other times
 
 # %% [markdown]
 # ##### Define
-# *Your definition here. Hint: [tutorial](https://chrisalbon.com/python/pandas_apply_operations_to_dataframes.html) for method used in solution.*
+# Make state names consistent. 
 
 # %% [markdown]
 # ##### Code
 
 # %%
-# Your cleaning code here
+# see how many states don't use 2 letter abbreviations
+patients_clean.query('state.str.len() > 2').info()
+
+# %%
+states_ser = patients_clean.loc[:,'state']
+states_ser
+
+# %%
+states_ser[states_ser.str.len() > 2].drop_duplicates()
+
+
+# %%
+def replace_name(state_name):
+    state_abbv = dict({'California':'CA','Illinois':'IL','Nebraska':'NE','Florida':'FL','New York':'NY'})
+    if state_name in state_abbv:
+        return state_abbv[state_name]
+    else:
+        return state_name    
+
+
+# %%
+patients2 = patients_clean.copy()
+
+# %%
+patients2.head(2)
+
+# %%
+patients2['state'] = patients2.apply(lambda row: replace_name(row['state']),axis=1)
+states_ser = patients2.loc[:,'state']
+states_ser[states_ser.str.len() > 2].drop_duplicates()
 
 # %% [markdown]
 # ##### Test
 
 # %%
-# Your testing code here
+patients2.sample(20)
 
 # %% [markdown]
 # #### Dsvid Gustafsson
 
 # %% [markdown]
 # ##### Define
-# *Your definition here.*
+# Name misspelled. Correct spelling error.
 
 # %% [markdown]
 # ##### Code
 
 # %%
-# Your cleaning code here
+patients2[patients2.loc[:,'surname'] == 'Gustafsson']
+
+# %%
+patients2.loc[8,'given_name'] = 'David'
 
 # %% [markdown]
 # ##### Test
 
 # %%
-# Your testing code here
+patients2.iloc[6:10,:]
 
 # %% [markdown]
 # #### Erroneous datatypes (assigned sex, state, zip_code, and birthdate columns) and Erroneous datatypes (auralin and novodra columns) and The letter 'u' in starting and ending doses for Auralin and Novodra
 
 # %% [markdown]
 # ##### Define
-# *Your definition here. Hint: [documentation page](https://pandas.pydata.org/pandas-docs/stable/generated/pandas.Series.astype.html) for one method used in solution, [documentation page](http://pandas.pydata.org/pandas-docs/version/0.20/generated/pandas.to_datetime.html) for one function used in the solution, and [documentation page](https://pandas.pydata.org/pandas-docs/stable/generated/pandas.Series.str.strip.html) for another method used in the solution.*
+# Fix datatype for birthday column. Change birthdate to datatype: datetime. 
 
 # %% [markdown]
 # ##### Code
 
 # %%
-# Your cleaning code here
+patients2.info()
+
+# %%
+patients2.head(3)
+
+# %%
+patients2['birthdate'] = pd.to_datetime(patients2['birthdate'])
+patients2.info()
 
 # %% [markdown]
 # ##### Test
 
 # %%
-# Your testing code here
+patients2.sample(20)
 
 # %% [markdown]
 # #### Multiple phone number formats
 
 # %% [markdown]
 # ##### Define
-# *Your definition here. Hint: helpful [Stack Overflow answer](https://stackoverflow.com/a/123681).*
+# Make phone numbers consistent. Either remove parantheses for area code or use paratheses on all. All phone numbers are US based (see 2 cells below). Therefore, remove country code and format number as so: (366) 677-9532
+
+# %%
+# Are all phone numbers in the US?
+
+patients2.groupby('country')['state'].value_counts()
+
 
 # %% [markdown]
 # ##### Code
 
 # %%
-# Your cleaning code here
+#Revise function from extraction of contact info. Utilize regex 'groups' to format phone appropriately
+
+def format_phone(row):
+    ph_re = re.compile(r'1?\W*([2-9][0-8][0-9])\W*([2-9][0-9]{2})\W*([0-9]{4})(\se?x?t?(\d*))?')
+    found = ph_re.search(row)
+    if found:
+        #print(f"area code: {found[1]}")
+        #print(f"prefix: {found[2]}")
+        #print(f"suffix: {found[3]}")
+        area_code = found[1]
+        pre = found[2]
+        suf = found[3]
+        return("(" + area_code + ") " + pre + "-" + suf)
+    else:
+        return ''
+
+
+# %%
+ph1 = '304-438-2648'
+ph2 = '(232)-343-2321'
+
+# %%
+format_phone(ph2)
+
+# %%
+patients2['phone'] = patients2.apply(lambda row: format_phone(row['phone']), axis=1)
 
 # %% [markdown]
 # ##### Test
+
+# %%
+patients2.sample(20)
 
 # %%
 # Your testing code here
@@ -527,19 +661,26 @@ dups
 
 # %% [markdown]
 # ##### Define
-# *Your definition here. Recall that it is assumed that the data that this John Doe data displaced is not recoverable.*
+# Remove all entries named "John Doe".
 
 # %% [markdown]
 # ##### Code
 
 # %%
-# Your cleaning code here
+patients3 = patients2.copy()
+
+# %%
+does = patients2.query("surname == 'Doe'").index
+does
+
+# %%
+patients2.drop(does, inplace=True)
 
 # %% [markdown]
 # ##### Test
 
 # %%
-# Your testing code here
+patients2.query("surname == 'Doe'").index
 
 # %% [markdown]
 # #### Multiple records for Jakobsen, Gersten, Taylor
@@ -552,7 +693,12 @@ dups
 # ##### Code
 
 # %%
-# Your cleaning code here
+patients2[patients2['surname'].duplicated()]
+
+# %%
+multi = ['Jakobsen', 'Gersten', 'Taylor']
+
+patients2.query("surname == 'Gersten' or surname == 'Jakobsen' or surname == 'Taylor'")
 
 # %% [markdown]
 # ##### Test
