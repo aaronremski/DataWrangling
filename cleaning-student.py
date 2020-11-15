@@ -99,35 +99,35 @@ sum(treatments.novodra.isnull())
 # %% [markdown]
 # #### Quality
 # ##### `patients` table
-# - Zip code is a float not a string
-# - Zip code has four digits sometimes
-# - Tim Neudorf height is 27 in instead of 72 in
-# - Full state names sometimes, abbreviations other times
-# - Dsvid Gustafsson
+# - ~~Zip code is a float not a string~~
+# - ~~Zip code has four digits sometimes~~
+# - ~~Tim Neudorf height is 27 in instead of 72 in~~
+# - ~~Full state names sometimes, abbreviations other times~~
+# - ~~Dsvid Gustafsson~~
 # - Missing demographic information (address - contact columns) ***(can't clean)***
-# - Erroneous datatypes (assigned sex, state, zip_code, and birthdate columns)
-# - Multiple phone number formats
-# - Default John Doe data
-# - Multiple records for Jakobsen, Gersten, Taylor
-# - kgs instead of lbs for Zaitseva weight
+# - Erroneous datatypes (assigned sex, state, ~~zip_code, and birthdate columns)~~
+# - ~~Multiple phone number formats~~
+# - ~~Default John Doe data~~
+# - ~~Multiple records for Jakobsen, Gersten, Taylor~~
+# - ~~kgs instead of lbs for Zaitseva weight~~
 #
 # ##### `treatments` table
-# - Missing HbA1c changes
-# - The letter 'u' in starting and ending doses for Auralin and Novodra
-# - Lowercase given names and surnames
-# - Missing records (280 instead of 350)
-# - Erroneous datatypes (auralin and novodra columns)
-# - Inaccurate HbA1c changes (leading 4s mistaken as 9s)
-# - Nulls represented as dashes (-) in auralin and novodra columns
+# - ~~Missing HbA1c changes~~
+# - ~~The letter 'u' in starting and ending doses for Auralin and Novodra~~
+# - ~~Lowercase given names and surnames~~
+# - ~~Missing records (280 instead of 350)~~
+# - ~~Erroneous datatypes (auralin and novodra columns)~~
+# - ~~Inaccurate HbA1c changes (leading 4s mistaken as 9s)~~
+# - ~~Nulls represented as dashes (-) in auralin and novodra columns~~
 #
 # ##### `adverse_reactions` table
-# - Lowercase given names and surnames
+# - ~~Lowercase given names and surnames
 
 # %% [markdown]
 # #### Tidiness
-# - Contact column in `patients` table should be split into phone number and email
-# - Three variables in two columns in `treatments` table (treatment, start dose and end dose)
-# - Adverse reaction should be part of the `treatments` table
+# - ~~Contact column in `patients` table should be split into phone number and email~~
+# - ~~Three variables in two columns in `treatments` table (treatment, start dose and end dose)~~
+# - ~~Adverse reaction should be part of the `treatments` table~~
 # - Given name and surname columns in `patients` table duplicated in `treatments` and `adverse_reactions` tables
 
 # %% [markdown]
@@ -687,40 +687,55 @@ patients2.query("surname == 'Doe'").index
 
 # %% [markdown]
 # ##### Define
-# *Your definition here.*
+# Remove multiple records for Jakobsen, Gersten, & Taylor. Only one record should be present per patient
 
 # %% [markdown]
 # ##### Code
 
 # %%
-patients2[patients2['surname'].duplicated()]
+patients2.drop(29, inplace=True)
 
 # %%
-multi = ['Jakobsen', 'Gersten', 'Taylor']
+patients2.drop(97, inplace=True)
 
-patients2.query("surname == 'Gersten' or surname == 'Jakobsen' or surname == 'Taylor'")
+# %%
+patients2.drop(131, inplace=True)
 
 # %% [markdown]
 # ##### Test
 
 # %%
-# Your testing code here
+patients2[patients2['surname'] == 'Jakobsen']
+
+# %%
+patients2[patients2['surname'] == 'Gersten']
+
+# %%
+patients2[patients2['surname'] == 'Taylor']
 
 # %% [markdown]
 # #### kgs instead of lbs for Zaitseva weight
 
 # %% [markdown]
 # ##### Define
-# *Your definition here.*
+# Convert Zaitseva weight to lbs and change weight cell
 
 # %% [markdown]
 # ##### Code
 
 # %%
-# Your cleaning code here
+patients2[patients2['surname'] == 'Zaitseva']
+
+# %%
+patients.loc[210,:]
+
+# %%
+patients.loc[210,'weight'] = 107.59
 
 # %% [markdown]
 # ##### Test
 
 # %%
-# Your testing code here
+patients.loc[210,'weight'] == 107.59
+
+# %%
