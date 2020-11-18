@@ -1,5 +1,7 @@
 # Data Wrangling Techniques
 
+This repository is a culmination of the Data Wrangling techniques I've learned through Udacity and is in no way an authoritative resource. Rather, it'll become a personal library.
+
 ## Gather
 
 Data provided as is.
